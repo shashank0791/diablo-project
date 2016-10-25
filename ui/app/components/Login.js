@@ -25,7 +25,7 @@ class LoginComponent extends Component {
 		        Username:
 		      </Col>
 		      <Col sm={10}>
-		        <FormControl type="text" placeholder="Username" />
+		        <FormControl type="text" placeholder="Username" id="username"/>
 		      </Col>
 		    </FormGroup>
 
@@ -34,7 +34,7 @@ class LoginComponent extends Component {
 		        Password
 		      </Col>
 		      <Col sm={10}>
-		        <FormControl type="password" placeholder="Password" />
+		        <FormControl type="password" placeholder="Password" id="password"/>
 		      </Col>
 		    </FormGroup>
 
