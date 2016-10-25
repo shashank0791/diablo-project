@@ -42,6 +42,11 @@ class SignupComponent extends Component {
               placeholder="Choose a user name"
             />
             <FieldGroup
+              id="userPic"
+              type="file"
+              label="Profile Pic"
+            />
+            <FieldGroup
               id="userEmail"
               type="email"
               label="Email"
