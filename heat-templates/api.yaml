@@ -1,0 +1,91 @@
+heat_template_version: 2015-04-30
+description: API resource.
+
+parameters:
+  availability_zone:
+    type: string
+    description: The Availability Zone to launch the instance.
+  volume_size:
+    type: number
+    description: Size of the volume to be created.
+    default: 1
+    constraints:
+      - range: { min: 1 }
+  image_id:
+    type: string
+    label: Image ID
+    description: Image to be used for compute instance
+    constraints:
+      - custom_constraint: glance.image
+  key:
+    type: string
+    description: Key pair to be created
+    label: Key pair
+  instance_type:
+    type: string
+    label: Instance Type
+    description: Type of instance (flavor) to be used
+    constraints:
+      - custom_constraint: nova.flavor
+  mysql_server:
+    type: string
+    label: MySQL database server
+    description: IP address of the MySQL database server.
+  network_id:
+    type: string
+    label: Network ID/Name
+    description: Network to be used for compute instance.
+resources:
+  name_nonce:
+    type: OS::Heat::RandomString
+    properties:
+            length: 7
+            sequence: lowercase
+  security_group:
+      type: OS::Neutron::SecurityGroup
+      properties:
+        name: api_server_security_group
+        rules:
+          - protocol: tcp
+            port_range_min: 80
+            port_range_max: 80
+          - protocol: tcp
+            port_range_min: 22
+            port_range_max: 22
+          - protocol: tcp
+            port_range_min: 443
+            port_range_max: 443
+  port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_param: network_id }
+      security_groups:
+        - { get_resource: security_group }
+  nova_server:
+    type: OS::Nova::Server
+    properties:
+      name:
+        str_replace:
+          template: api-$NONCE
+          params:
+            $NONCE: { get_resource: name_nonce}
+      availability_zone: { get_param: availability_zone }
+      image: { get_param: image_id }
+      flavor: { get_param: instance_type }
+      key_name: { get_param: key }
+      networks:
+        - port: { get_resource: port }
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          params:
+            __mysql_ip__: { get_param: mysql_server }
+          template: |
+            #!/bin/sh
+            sudo apt-get update
+            sudo apt-get upgrade
+            echo '__mysql_ip__' > /opt/mysqlip
+outputs:
+  ip:
+    description: API IP
+    value: { get_attr: [nova_server, first_address] }

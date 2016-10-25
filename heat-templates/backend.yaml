@@ -1,0 +1,90 @@
+heat_template_version: 2015-04-30
+description: MySQL deployer.
+
+parameters:
+  availability_zone:
+    type: string
+    description: The Availability Zone to launch the instance.
+  image_id:
+    type: string
+    label: Image ID
+    description: Image to be used for compute instance
+    constraints:
+      - custom_constraint: glance.image
+  instance_type:
+    type: string
+    label: Instance Type
+    description: Type of instance (flavor) to be used
+    constraints:
+      - custom_constraint: nova.flavor
+  key:
+    type: string
+    label: Key pair
+    description: Key pair to be created
+  network_id:
+    type: string
+    label: Network ID/Name
+    description: Network to be used for compute instance.
+resources:
+  name_nonce:
+    type: OS::Heat::RandomString
+    properties:
+            length: 7
+            sequence: lowercase
+  security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: db_server_security_group
+      rules:
+        - protocol: tcp
+          port_range_min: 3306
+          port_range_max: 3306
+        - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+  port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_param: network_id }
+      security_groups:
+        - { get_resource: security_group }
+  mysql_server:
+    type: OS::Nova::Server
+    properties:
+      name:
+        str_replace:
+          template: db-$NONCE
+          params:
+            $NONCE: { get_resource: name_nonce}
+      availability_zone: { get_param: availability_zone }
+      image: { get_param: image_id }
+      key_name: { get_param: key } 
+      networks:
+        - port: { get_resource: port }
+      flavor: { get_param: instance_type }
+      user_data_format: RAW
+      user_data: 
+        str_replace:
+          params:
+            mysql_root_pwd: "root"
+            database_name: "SAMPLE"
+            database_user: "root"
+            database_password: "root"
+          template: |
+            #!/bin/bash
+            sudo apt-get update
+            sudo apt-get upgrade
+            sudo debconf-set-selections <<< "mysql-server mysql-server/root_password password 'root'"
+            sudo debconf-set-selections <<< "mysql-server mysql-server/root_password_again password 'root'"
+            export DEBIAN_FRONTEND="noninteractive"
+            sudo apt-get install -y mysql-server
+            sudo service mysql restart
+            sudo mysqladmin -u root password "mysql_root_pwd"
+            sudo service mysql restart
+outputs:
+  ip:
+    description: The ip address of the mysql instance
+    value: { get_attr: [mysql_server, first_address] }
+  port:
+    description: The network port of the MySQL instance.
+    value: { get_resource: port }

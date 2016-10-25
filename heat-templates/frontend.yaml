@@ -1,0 +1,88 @@
+heat_template_version: 2015-04-30
+description: Front End resource.
+
+parameters:
+  availability_zone:
+    type: string
+    description: The Availability Zone to launch the instance.
+  image_id:
+    type: string
+    label: Image ID
+    description: Image to be used for compute instance
+    constraints:
+      - custom_constraint: glance.image
+  instance_type:
+    type: string
+    label: Instance Type
+    description: Type of instance (flavor) to be used
+    constraints:
+      - custom_constraint: nova.flavor
+  api_server:
+    type: string
+    label: API server
+    description: IP address of the MySQL database server.
+  key:
+    type: string
+    description: Key pair to be created
+    label: Key pair
+  network_id:
+    type: string
+    label: Network ID/Name
+    description: Network to be used for compute instance.
+resources:
+  name_nonce:
+    type: OS::Heat::RandomString
+    properties:
+            length: 7
+            sequence: lowercase
+  security_group:
+      type: OS::Neutron::SecurityGroup
+      properties:
+        name: web_server_security_group
+        rules:
+          - protocol: tcp
+            port_range_min: 80
+            port_range_max: 80
+          - protocol: tcp
+            port_range_min: 22
+            port_range_max: 22
+  port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_param: network_id }
+      security_groups:
+        - { get_resource: security_group }
+  nova_server:
+    type: OS::Nova::Server
+    properties:
+      name:
+        str_replace:
+          template: ui-$NONCE
+          params:
+            $NONCE: { get_resource: name_nonce}
+      availability_zone: { get_param: availability_zone }
+      image: { get_param: image_id }
+      key_name: { get_param: key }
+      flavor: { get_param: instance_type }
+      networks: 
+        - port: { get_resource: port }
+      user_data_format: RAW
+      user_data: 
+        str_replace:
+          params:
+            __api_ip__: { get_param: api_server }
+          template: |
+            #!/bin/sh
+            sudo apt-get update
+            sudo apt-get upgrade
+            sudo apt-get install -y git
+            echo '__api_ip__' > /opt/apiip
+            sudo git clone https://github.com/shashank0791/diablo-project.git /opt/diablo-project
+            sudo apt-get install -y npm
+            sudo ln -s `which nodejs` /usr/bin/node
+            sudo npm install --prefix /opt/diablo-project/ui/
+            sudo npm start --prefix /opt/diablo-project/ui/
+outputs:
+  ip:
+    description: Frontend IP
+    value: { get_attr: [nova_server, first_address] }
