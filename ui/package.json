@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "description": "Diablo's User Interface",
   "scripts": {
+    "copy": "copyfiles -f ./app/index.html ./dist & copyfiles -f ./app/images/icon.png ./dist/images",
+    "dist": "npm run copy & webpack --progress --colors",
     "lint": "eslint ./app",
     "start": "node server.js --env=dev",
     "test": "karma start"
@@ -17,6 +19,7 @@
     "babel-preset-react": "^6.0.15",
     "bower-webpack-plugin": "^0.1.9",
     "chai": "^3.2.0",
+    "copyfiles": "^1.0.0",
     "css-loader": "^0.23.0",
     "eslint": "^2.2.0",
     "eslint-loader": "^1.0.0",
