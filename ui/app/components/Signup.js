@@ -17,7 +17,12 @@ class SignupComponent extends Component {
       <Row>
         <Col md={8} mdOffset={2}>
           <Row>
-            <Col md={12}><h2>Please Signup</h2></Col>
+            <Col md={1}>
+              <img width={64} height={64} src="/../images/icon.png" />
+            </Col>
+            <Col md={11}>
+              <h2>Please Signup</h2>
+            </Col>
           </Row>
           <Well bsSize="small">
             <FieldGroup
