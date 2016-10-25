@@ -13,7 +13,6 @@ class AppComponent extends Component {
         <Grid>
           <Row>
             <Col md={12}>
-              <h1>HERE GOES EVERYTHING</h1>
               {this.props.children}
             </Col>
           </Row>
