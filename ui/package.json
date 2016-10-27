@@ -58,9 +58,10 @@
     "keymirror": "^0.1.1",
     "moment": "^2.15.2",
     "normalize.css": "^4.0.0",
+    "superagent": "^2.3.0",
     "react": "^15.0.0",
     "react-bootstrap": "^0.30.5",
-    "react-event-calendar": "0.3.0",
+    "react-big-calendar": "^0.11.0",
     "react-dom": "^15.0.0",
     "react-router": "^2.4.0",
     "react-bootstrap-date-picker": "3.7.0"

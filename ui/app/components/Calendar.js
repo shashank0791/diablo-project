@@ -1,9 +1,11 @@
-import React, {Component} from 'react';
+import React, {Component, PropTypes} from 'react';
 import {Row, Col, ButtonToolbar, Button} from 'react-bootstrap';
-import EventCalendar from 'react-event-calendar';
+//import EventCalendar from 'react-event-calendar';
+import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
+import EventActions from '../actions/EventActions';
+import EventStore from '../stores/EventStore';
 
-const tempEvents = {};
 
 class CalendarComponent extends Component {
 
@@ -11,56 +13,56 @@ class CalendarComponent extends Component {
     super(props);
 
     this.state = {
-      moment: moment()
+      moment: moment(),
+      events: []
     };
 
-    this.handleNextMonth = this.handleNextMonth.bind(this);
-    this.handlePreviousMonth = this.handlePreviousMonth.bind(this);
-    this.handleToday = this.handleToday.bind(this);
-    this.getHumanDate = this.getHumanDate.bind(this);
+    BigCalendar.setLocalizer(
+      BigCalendar.momentLocalizer(moment)
+    );
+    this.onChange = this.onChange.bind(this);
   }
-
-  handleNextMonth() {
+  onChange(){
     this.setState({
-        moment: this.state.moment.add(1, 'M'),
-    });
+      events: EventStore.getEvents(),
+      moment: this.state.moment
+    })
+  }
+  componentWillMount() {
+    EventStore.addChangeListener(this.onChange);
   }
 
-  handlePreviousMonth() {
-    this.setState({
-        moment: this.state.moment.subtract(1, 'M'),
-    });
+  componentDidMount() {
+    EventActions.getEvents();
   }
 
-  handleToday() {
-    this.setState({
-        moment: moment(),
-    });
-  }
-
-  getHumanDate(){
-    return [moment.months('MM', this.state.moment.month()), this.state.moment.year(), ].join(' ');
+  componentWillUnmount(){
+    EventStore.removeChangeListener(this.onChange);
   }
 
   render(){
+    let events = [];
+
+    if(this.state.events) {
+      events = this.state.events.map((event) => {
+        event.start = moment(event.start, 'YYYY-MM-DD');
+        event.end = moment(event.end, 'YYYY-MM-DD');
+        return event;
+      });
+    }
+
     return(
       <Row>
-        <Col md={6}>
-          <ButtonToolbar>
-            <Button onClick={this.handleToday}>Today</Button>
-            <Button onClick={this.handlePreviousMonth}>Previous Month</Button>
-            <Button onClick={this.handleNextMonth}>Next Month</Button>
-          </ButtonToolbar>
-        </Col>
-        <Col md={6}>
-          <h2 className="pull-right">{this.getHumanDate()}</h2>
-        </Col>
-        <br/>
         <Col md={12}>
-          <EventCalendar month={10} year={2016} wrapTitle="OSIC WFH/OOO"/>
+          <BigCalendar
+            events={events}
+            defaultView="month"
+            defaultDate={new Date(2016, 9, 1)}
+          />
         </Col>
       </Row>
-    )
+    );
+
   }
 
 }

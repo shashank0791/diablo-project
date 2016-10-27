@@ -1,0 +1,32 @@
+[
+  {
+    "start": "2016-10-01",
+    "end": "2016-10-03",
+    "title": "Dani WFH",
+    "desc": "The automatic gate of the apartment complex won't open and I can get my car out."
+  },
+  {
+    "start": "2016-10-05",
+    "end": "2016-10-06",
+    "title": "JP WFH",
+    "desc": "My Dog is Sick"
+  },
+  {
+    "start": "2016-10-10",
+    "end": "2016-10-10",
+    "title": "Darek WFH",
+    "desc": "Feeling Dizzy"
+  },
+  {
+    "start": "2016-10-15",
+    "end": "2016-10-20",
+    "title": "Ankur OOO",
+    "desc": "Heading to Oregon for a few days"
+  },
+  {
+    "start": "2016-10-20",
+    "end": "2016-10-20",
+    "title": "Shasha WFH",
+    "desc": "Expecting an important package"
+  }
+]
