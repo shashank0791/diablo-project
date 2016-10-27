@@ -5,8 +5,18 @@ from sqlalchemy import orm
 from sqlalchemy import sql
 from sqlalchemy.ext.declarative import declarative_base as dec_base
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy_utils import database_exists, create_database
 
-engine = create_engine('mysql://root:root@localhost/diablo', echo=True)
+USER = "root"
+PASSWORD = "root"
+IP = "localhost"
+DB_NAME = "diablo"
+DB_URL = "mysql://{}:{}@{}/{}".format(USER, PASSWORD, IP, DB_NAME)
+
+engine = create_engine(DB_URL)
+if not database_exists(engine.url):
+    create_database(engine.url)
+
 Base = dec_base()
 
 class User(Base):
