@@ -35,6 +35,12 @@ parameters:
     type: string
     label: Network ID/Name
     description: Network to be used for compute instance.
+  pool_id:
+    type: string
+    description: Pool to contact
+  subnet_id:
+    type: string
+    description: Subnet ID for pool.
 resources:
   name_nonce:
     type: OS::Heat::RandomString
@@ -81,10 +87,38 @@ resources:
           params:
             __mysql_ip__: { get_param: mysql_server }
           template: |
-            #!/bin/sh
+            #!/bin/bash
             sudo apt-get update
             sudo apt-get upgrade
+            sudo debconf-set-selections <<< "mysql-server mysql-server/root_password password 'root'"
+            sudo debconf-set-selections <<< "mysql-server mysql-server/root_password_again password 'root'"
+            export DEBIAN_FRONTEND="noninteractive"
+            sudo apt-get install -y mysql-server
+            sudo service mysql restart
+            sudo mysqladmin -u root password "mysql_root_pwd"
+            sudo service mysql restart
+            sudo apt-get install -y git
+            sudo git clone https://github.com/shashank0791/diablo-project.git /opt/diablo-project
+            sudo apt-get install -y apache2
+            sudo apt-get install -y libapache2-mod-wsgi
+            sudo apt-get install -y python2.7 python-pip
+            sudo pip install pecan
+            cd /opt/diablo-project/wfh/
+            sudo python /opt/diablo-project/wfh/setup.py install
+            sudo service apache2 restart
+            sudo cp /opt/diablo-project/wfh/sample/apache2/sites-available/wfh.conf /etc/apache2/sites-available/
+            sudo a2dissite 000-default
+            sudo service apache2 restart
+            sudo a2ensite wfh
+            sudo service apache2 restart
             echo '__mysql_ip__' > /opt/mysqlip
+  member:
+    type: OS::Neutron::LBaaS::PoolMember
+    properties:
+      pool: { get_param: pool_id }
+      address: { get_attr: [ nova_server, first_address ]}
+      protocol_port: 80
+      subnet: { get_param: subnet_id }
 outputs:
   ip:
     description: API IP

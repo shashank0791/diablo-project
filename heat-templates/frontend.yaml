@@ -29,6 +29,12 @@ parameters:
     type: string
     label: Network ID/Name
     description: Network to be used for compute instance.
+  pool_id:
+    type: string
+    description: Pool to contact
+  subnet_id:
+    type: string
+    description: Subnet ID for pool.
 resources:
   name_nonce:
     type: OS::Heat::RandomString
@@ -72,16 +78,29 @@ resources:
           params:
             __api_ip__: { get_param: api_server }
           template: |
-            #!/bin/sh
+            #!/bin/bash
             sudo apt-get update
             sudo apt-get upgrade
+            sudo apt-get install apache2 -y
             sudo apt-get install -y git
             echo '__api_ip__' > /opt/apiip
+            touch /etc/apache2/sites-available/ui.conf
             sudo git clone https://github.com/shashank0791/diablo-project.git /opt/diablo-project
             sudo apt-get install -y npm
             sudo ln -s `which nodejs` /usr/bin/node
-            sudo npm install --prefix /opt/diablo-project/ui/
-            sudo npm start --prefix /opt/diablo-project/ui/
+            sudo npm install --prefix /opt/diablo-project/ui/ 
+            sudo npm run start --prefix /opt/diablo-project/ui/ & sudo npm run dist --prefix /opt/diablo-project/ui/ & sudo a2dissite 000-default
+            sudo service apache2 restart
+            sudo cp /opt/diablo-project/ui/ui.conf /etc/apache2/sites-available/
+            sudo a2ensite ui
+            sudo service apache2 restart
+  member:
+    type: OS::Neutron::LBaaS::PoolMember
+    properties:
+      pool: { get_param: pool_id }
+      address: { get_attr: [ nova_server, first_address ]}
+      protocol_port: 80
+      subnet: { get_param: subnet_id }
 outputs:
   ip:
     description: Frontend IP

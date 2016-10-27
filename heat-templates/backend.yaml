@@ -25,6 +25,12 @@ parameters:
     type: string
     label: Network ID/Name
     description: Network to be used for compute instance.
+  pool_id:
+    type: string
+    description: Pool to contact
+  subnet_id:
+    type: string
+    description: Subnet ID for pool.
 resources:
   name_nonce:
     type: OS::Heat::RandomString
@@ -80,7 +86,24 @@ resources:
             sudo apt-get install -y mysql-server
             sudo service mysql restart
             sudo mysqladmin -u root password "mysql_root_pwd"
+            sudo sed -i 's/bind-address/#bind-address/g' /etc/mysql/mysql.conf.d/mysqld.cnf
             sudo service mysql restart
+            sudo mysql -u root --password='root' -e "CREATE USER 'root'@'%' IDENTIFIED BY 'root';"
+            sudo mysql -u root --password='root' -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;"
+            sudo mysql -u root --password='root' -e "FLUSH PRIVILEGES;"
+            sudo service mysql restart
+            sudo apt-get install -y python python-pip python-mysqldb
+            sudo pip install sqlalchemy
+            sudo git clone https://github.com/shashank0791/diablo-project.git /opt/diablo-project
+            sudo mysql -u root --password='root' -e "CREATE DATABASE diablo"
+            sudo python /opt/diablo-project/db/models.py
+  member:
+    type: OS::Neutron::LBaaS::PoolMember
+    properties:
+      pool: { get_param: pool_id }
+      address: { get_attr: [ mysql_server, first_address ]}
+      protocol_port: 3306
+      subnet: { get_param: subnet_id }
 outputs:
   ip:
     description: The ip address of the mysql instance

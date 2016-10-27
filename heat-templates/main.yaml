@@ -9,6 +9,9 @@ parameters:
     type: number
     description: Size of the volume to be created.
     default: 1
+  subnet_id:
+    type: string
+    description: Subnet ID for pool.
   image_id:
     type: string
     label: Image ID
@@ -37,8 +40,11 @@ parameters:
   network_id:
     type: string
     label: Network ID or name
+  subnet_id:
+    type: string
+    label: Subnet ID
 resources:
-  group-slice:
+  group-backend:
     type: OS::Heat::AutoScalingGroup
     properties:
       cooldown: 60
@@ -46,24 +52,88 @@ resources:
       max_size: 99
       min_size: 1
       resource:
-        type: slice.yaml
+        type: backend.yaml
         properties:
           image_id: { get_param: image_id }
           instance_type: { get_param: instance_type }
           network_id: { get_param: network_id }
           availability_zone: { get_param: availability_zone }
+          pool_id: f3be9e32-c854-41a5-8331-9985e923f1f5
           key: { get_param: key }
-  scaleup_policy_slice:
+          subnet_id: { get_param: subnet_id }
+  group-api:
+    type: OS::Heat::AutoScalingGroup
+    properties:
+      cooldown: 60
+      desired_capacity: { get_param: num_of_slices }
+      max_size: 99
+      min_size: 1
+      resource:
+        type: api.yaml
+        properties:
+          image_id: { get_param: image_id }
+          instance_type: { get_param: instance_type }
+          network_id: { get_param: network_id }
+          availability_zone: { get_param: availability_zone }
+          mysql_server: 192.168.0.164
+          pool_id: e1b1173e-1b1d-474b-af88-5653d0365b55
+          key: { get_param: key }
+          subnet_id: { get_param: subnet_id }
+  group-frontend:
+    type: OS::Heat::AutoScalingGroup
+    properties:
+      cooldown: 60
+      desired_capacity: { get_param: num_of_slices }
+      max_size: 99
+      min_size: 1
+      resource:
+        type: frontend.yaml
+        properties:
+          image_id: { get_param: image_id }
+          instance_type: { get_param: instance_type }
+          network_id: { get_param: network_id }
+          availability_zone: { get_param: availability_zone }
+          api_server: 192.168.0.165
+          pool_id: a57b6bf3-05da-49bf-a67d-257823581b3e
+          key: { get_param: key }
+          subnet_id: { get_param: subnet_id }
+  scaleup_policy_frontend:
     type: OS::Heat::ScalingPolicy
     properties:
       adjustment_type: change_in_capacity
-      auto_scaling_group_id: { get_resource: group-slice }
+      auto_scaling_group_id: { get_resource: group-frontend }
+      cooldown: 60
+      scaling_adjustment: { get_param: scaling_size }
+  scaleup_policy_api:
+    type: OS::Heat::ScalingPolicy
+    properties:
+      adjustment_type: change_in_capacity
+      auto_scaling_group_id: { get_resource: group-api }
+      cooldown: 60
+      scaling_adjustment: { get_param: scaling_size }
+  scaleup_policy_backend:
+    type: OS::Heat::ScalingPolicy
+    properties:
+      adjustment_type: change_in_capacity
+      auto_scaling_group_id: { get_resource: group-backend }
       cooldown: 60
       scaling_adjustment: { get_param: scaling_size }
 outputs:
-  scale_up_url_slice:
+  scale_up_url_frontend:
     description: >
       This URL is the webhook to scale up the autoscaling group.  You
       can invoke the scale-up operation by doing an HTTP POST to this
       URL; no body nor extra headers are needed.
-    value: {get_attr: [scaleup_policy_slice, alarm_url]}
+    value: {get_attr: [scaleup_policy_frontend, alarm_url]}
+  scale_up_url_api:
+    description: >
+      This URL is the webhook to scale up the autoscaling group.  You
+      can invoke the scale-up operation by doing an HTTP POST to this
+      URL; no body nor extra headers are needed.
+    value: {get_attr: [scaleup_policy_api, alarm_url]}
+  scale_up_url_backend:
+    description: >
+      This URL is the webhook to scale up the autoscaling group.  You
+      can invoke the scale-up operation by doing an HTTP POST to this
+      URL; no body nor extra headers are needed.
+    value: {get_attr: [scaleup_policy_backend, alarm_url]}
