@@ -38,9 +38,16 @@ class User(JsonMixin, Base):
                              self.name, self.username, self.password)
 
     def verify_password(self, password):
-        pwhash = bcrypt.hashpw(password.encode('utf-8'),
-                                        bcrypt.gensalt())
-        return password == pwhash
+        return (bcrypt.hashpw(password.encode('utf-8'), self.password) ==
+                self.password)
+
+    def hash_password(self, password):
+        hashpw =  bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        self.password = hashpw
+
+    @classmethod
+    def get_user(cls, username):
+        return session.query(cls).filter_by(username=username).first()
 
 
 class Team(JsonMixin, Base):
