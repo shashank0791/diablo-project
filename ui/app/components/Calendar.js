@@ -26,7 +26,7 @@ class CalendarComponent extends Component {
     this.setState({
       events: EventStore.getEvents(),
       moment: this.state.moment
-    })
+    });
   }
   componentWillMount() {
     EventStore.addChangeListener(this.onChange);
