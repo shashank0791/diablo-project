@@ -18,7 +18,7 @@ app = {
 }
 
 logging = {
-    'root': {'level': 'INFO', 'handlers': ['console']},
+    'root': {'level': 'DEBUG', 'handlers': ['console']},
     'loggers': {
         'wfh': {'level': 'DEBUG', 'handlers': ['console'], 'propagate': False},
         'pecan': {'level': 'DEBUG', 'handlers': ['console'], 'propagate': False},
