@@ -4,7 +4,8 @@ import Login from './components/Login';
 import Logout from './components/Logout';
 import Signup from './components/Signup';
 import Calendar from './components/Calendar';
-import AddEvent from './components/AddEvent'
+import AddEvent from './components/AddEvent';
+import Excuses from './components/Excuses';
 
 import App from './components/App';
 
@@ -19,6 +20,7 @@ class Main extends Component {
           <Route path="/calendar" components={Calendar}/>
           <Route path="/addEvent" components={AddEvent}/>
           <Route path="/logout" component={Logout}/>
+          <Route path="/excuses" component={Excuses}/>
         </Route>
       </Router>
     );

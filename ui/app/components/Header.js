@@ -41,6 +41,7 @@ class HeaderComponent extends Component {
               <Nav pullRight>
                 <NavItem href="/calendar">Calendar</NavItem>
                 <NavItem href="/addEvent">Add Event</NavItem>
+                <NavItem href="/excuses">Excuses</NavItem>
                 <NavItem href="/logout">Logout</NavItem>
               </Nav>
               ) : (
