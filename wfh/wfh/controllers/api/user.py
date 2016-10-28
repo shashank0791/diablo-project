@@ -3,7 +3,7 @@ import uuid
 
 import bcrypt
 import pecan
-from pecan import abort, rest, response, secure
+from pecan import abort, rest, response
 from sqlalchemy import exc, update
 
 from wfh.auth import user_authenticated
@@ -84,10 +84,10 @@ class UserController(rest.RestController):
         if args:
             abort(404)
 
-        name = kwargs['name']
-        username = kwargs['username']
-        password = kwargs['password']
-        email = kwargs['email']
+        name = kwargs.get('name')
+        username = kwargs.get('username')
+        password = kwargs.get('password')
+        email = kwargs.get('email')
         team_id = kwargs.get('team_id')
         photo_id = kwargs.get('photo_id')
 
