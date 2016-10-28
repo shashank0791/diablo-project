@@ -2,21 +2,15 @@ import bcrypt
 import pecan
 from pecan import abort, rest, response
 from sqlalchemy import exc
-from sqlalchemy.orm import sessionmaker
 
 from wfh.model import models
-
-engine = models.engine
-Session = sessionmaker(bind=engine)
-session = Session()
-
 
 class UserController(rest.RestController):
     def hash_password(self, password):
         return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
     def get_user(self, username):
-        return session.query(models.User).filter_by(username=username).first()
+        return models.session.query(models.User).filter_by(username=username).first()
 
     @pecan.expose('json')
     def get_one(self, *args, **kwargs):
@@ -27,7 +21,7 @@ class UserController(rest.RestController):
     @pecan.expose('json')
     def get_all(self):
         response.status = 200
-        users = session.query(models.User).all()
+        users = models.session.query(models.User).all()
         return [user.as_dict() for user in users]
 
     @pecan.expose()
@@ -44,11 +38,11 @@ class UserController(rest.RestController):
 
         user = models.User(name=name, username=username, email=email,
                            password=self.hash_password(password))
-        session.add(user)
+        models.session.add(user)
 
         try:
-            session.commit()
-        except exc.IntegrityError:
+            models.session.commit()
+        except (exc.IntegrityError, exc.InvalidRequestError):
             # Duplicated Entry (the same username)
             response.status = 409
         else:
