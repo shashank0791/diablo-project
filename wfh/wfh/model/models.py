@@ -30,7 +30,7 @@ class User(JsonMixin, Base):
     username = Column(String(50), unique=True)
     password = Column(String(60))
     email = Column(String(50))
-    team = Column(Integer, ForeignKey('team.id'))
+    team_id = Column(Integer, ForeignKey('team.id'))
     photo_id = Column(Integer, ForeignKey('photos.id'))
 
     def __repr__(self):

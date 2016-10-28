@@ -34,11 +34,12 @@ class UserController(rest.RestController):
         username = kwargs['username']
         password = kwargs['password']
         email = kwargs['email']
-        team = kwargs.get('team')
+        team_id = kwargs.get('team_id')
         photo_id = kwargs.get('photo_id')
 
         user = models.User(name=name, username=username, email=email,
-                           password=self.hash_password(password))
+                           password=self.hash_password(password),
+                           team_id=team_id)
         models.session.add(user)
 
         try:
