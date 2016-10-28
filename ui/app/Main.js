@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Router, Route, IndexRoute} from 'react-router';
 import Login from './components/Login';
+import Logout from './components/Logout';
 import Signup from './components/Signup';
 import Calendar from './components/Calendar';
 import AddEvent from './components/AddEvent'
@@ -17,6 +18,7 @@ class Main extends Component {
           <Route path="/signup" components={Signup}/>
           <Route path="/calendar" components={Calendar}/>
           <Route path="/addEvent" components={AddEvent}/>
+          <Route path="/logout" component={Logout}/>
         </Route>
       </Router>
     );

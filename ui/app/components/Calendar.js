@@ -5,7 +5,7 @@ import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
 import EventActions from '../actions/EventActions';
 import EventStore from '../stores/EventStore';
-
+import AuthStore from '../stores/AuthStore';
 
 class CalendarComponent extends Component {
 
@@ -41,6 +41,12 @@ class CalendarComponent extends Component {
   }
 
   render(){
+
+    if(!AuthStore.isLoggedIn()) {
+      this.props.history.goBack();
+      return {};
+    }
+
     let events = [];
 
     if(this.state.events) {
