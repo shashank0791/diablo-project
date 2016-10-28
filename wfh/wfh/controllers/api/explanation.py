@@ -1,3 +1,5 @@
+import datetime
+
 import pecan
 from pecan import abort, rest, response, secure
 
@@ -6,22 +8,41 @@ from wfh.model import models
 
 
 class WfhController(rest.RestController):
-    @pecan.expose('json')
-    def get_all(self):
-        teams = models.session.query(models.Team).all()
-        return [team.as_dict() for team in teams]
+    def get_user_id(self, auth_key):
+        authenticated = models.session.query(models.Authentication).filter_by(
+                auth_key=auth_key).first()
+        if authenticated:
+            return int(authenticated.user_id)
+        else:
+            abort(401)
+
+    def create_explanation(self, desc):
+        explanation = models.Explanation(desc=desc)
+        models.session.add(explanation)
+        models.session.commit()
+        models.session.refresh(explanation)
+        return explanation
+
+    def create_wfh(self, user_id, explanation, actual_date=None):
+        create_date = datetime.datetime.now()
+        actual_date = actual_date or create_date
+
+        wfh = models.Wfh(user_id=user_id, explanation_id=int(explanation.id),
+                         create_date=create_date, actual_date=actual_date)
+        models.session.add(wfh)
+        models.session.commit()
+        models.session.refresh(wfh)
+        return wfh
 
     @pecan.expose()
     def post(self, *args, **kwargs):
-        name = kwargs.get('name')
-        if not name:
-            abort(404)
-        team = models.Team(name=name)
-        models.session.add(team)
-        try:
-            models.session.commit()
-        except:
-            abort(404)
+        auth_key = kwargs.get('auth_key')
+        user_id = self.get_user_id(auth_key)
+        desc = kwargs.get('desc')
+        actual_date = kwargs.get('actual_date')
+
+        explanation = self.create_explanation(desc)
+        wfh = self.create_wfh(user_id, explanation, actual_date)
 
         response.status = 201
         return

@@ -109,6 +109,8 @@ class Authentication(JsonMixin, Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     auth_key = Column(String(128), unique=True)
 
+    user = relationship("User")
+
     @property
     def is_valid(self):
         now = datetime.datetime.now()
