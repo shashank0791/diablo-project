@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import orm
 from sqlalchemy import sql
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Date
 from sqlalchemy_utils import database_exists, create_database
 
 USER = "root"
@@ -30,7 +30,7 @@ class User(JsonMixin, Base):
     username = Column(String(50), unique=True)
     password = Column(String(60))
     email = Column(String(50))
-    team = Column(Integer, ForeignKey('team.id'))
+    team_id = Column(Integer, ForeignKey('team.id'))
     photo_id = Column(Integer, ForeignKey('photos.id'))
 
     def __repr__(self):
@@ -61,9 +61,9 @@ class Wfh(JsonMixin, Base):
     __tablename__ = 'wfh'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
-    create_date = Column(String(50))
-    actual_date = Column(String(50))
-    explaination = Column(Integer, ForeignKey('explaination.id'))
+    create_date = Column(Date())
+    actual_date = Column(Date())
+    explanation_id = Column(Integer, ForeignKey('explanation.id'))
 
 
 class Explanation(JsonMixin, Base):
@@ -79,7 +79,7 @@ class Votes(JsonMixin, Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
-    explanation = Column(Integer, ForeignKey('explanation.id'))
+    explanation_id = Column(Integer, ForeignKey('explanation.id'))
 
 Session = orm.sessionmaker(bind=engine)
 session = Session()
