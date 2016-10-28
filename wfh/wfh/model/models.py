@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_utils import database_exists, create_database
 
 USER = "root"
-PASSWORD = "stackdb"
+PASSWORD = "root"
 IP = "localhost"
 DB_NAME = "diablo"
 DB_URL = "mysql://{}:{}@{}/{}".format(USER, PASSWORD, IP, DB_NAME)
