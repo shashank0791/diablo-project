@@ -1,11 +1,38 @@
 import React, {Component} from 'react';
 import { Form, FormGroup, Col, FormControl, Checkbox, Button, ControlLabel, Well, Image } from 'react-bootstrap';
+import AuthActions from '../actions/AuthActions';
+import AuthStore from '../stores/AuthStore';
+
 
 class LoginComponent extends Component {
   constructor() {
   	super();
-  	this.username = '';
-  	this.password = '';
+
+		this.state = {
+			userid: '',
+			pwd: ''
+		};
+    this.handleOnChange = this.handleOnChange.bind(this);
+		this.handleSubmit = this.handleSubmit.bind(this)
+  }
+
+  handleSubmit(event) {
+    AuthActions.loginUser(this.state.userid, this.state.pwd);
+    this.props.history.push('/calendar');
+	}
+
+	handleOnChange(field, e){
+	  var change = {}
+	  change[field] = e.target.value;
+    this.setState(change);
+  }
+
+  componentWillMount(){
+    AuthStore.addChangeListener(this.handleOnChange)
+  }
+
+  componentWillUnmount(){
+    AuthStore.removeChangeListener(this.handleOnChange)
   }
 
   render(){
@@ -25,7 +52,12 @@ class LoginComponent extends Component {
 		        Username:
 		      </Col>
 		      <Col sm={10}>
-		        <FormControl type="text" placeholder="Username" id="username"/>
+		        <FormControl
+              type="text"
+              placeholder="Username"
+              id="username"
+              onChange={this.handleOnChange.bind(this, 'userid')}
+            />
 		      </Col>
 		    </FormGroup>
 
@@ -34,7 +66,12 @@ class LoginComponent extends Component {
 		        Password
 		      </Col>
 		      <Col sm={10}>
-		        <FormControl type="password" placeholder="Password" id="password"/>
+		        <FormControl
+              type="password"
+              placeholder="Password"
+              id="password"
+              onChange={this.handleOnChange.bind(this, 'pwd')}
+            />
 		      </Col>
 		    </FormGroup>
 
@@ -46,7 +83,7 @@ class LoginComponent extends Component {
 
 		    <FormGroup>
 		      <Col smOffset={7} sm={2}>
-		          <Button bsStyle='primary' type="submit">Sign in</Button>
+		          <Button bsStyle='primary' type="submit" onClick={this.handleSubmit}>Sign in</Button>
 		      </Col>
 		      <Col smOffset={10}>
 		      	<a href="signup"><Button type="button">Sign up</Button></a>
