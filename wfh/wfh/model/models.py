@@ -63,7 +63,7 @@ class Wfh(JsonMixin, Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     create_date = Column(String(50))
     actual_date = Column(String(50))
-    explaination = Column(Integer, ForeignKey('explaination.id'))
+    explaination = Column(Integer, ForeignKey('explanation.id'))
 
 
 class Explanation(JsonMixin, Base):
