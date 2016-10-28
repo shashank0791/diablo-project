@@ -64,6 +64,7 @@ class CalendarComponent extends Component {
             events={events}
             defaultView="month"
             defaultDate={new Date(2016, 9, 1)}
+            onSelectEvent={event => alert(event.desc)}
           />
         </Col>
       </Row>
