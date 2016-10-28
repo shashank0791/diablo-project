@@ -3,11 +3,13 @@ import uuid
 
 import bcrypt
 import pecan
-from pecan import abort, rest, response
-from sqlalchemy import exc, update
+from pecan import abort
+from pecan import response
+from pecan import rest
+from sqlalchemy import exc
 
-from wfh.auth import user_authenticated
 from wfh.model import models
+
 
 class UserController(rest.RestController):
     @pecan.expose('json')
@@ -18,8 +20,8 @@ class UserController(rest.RestController):
 
     @pecan.expose('json')
     def get_all(self):
-        response.status = 200
         users = models.session.query(models.User).all()
+        response.status = 200
         return [user.as_dict() for user in users]
 
     @pecan.expose()
@@ -34,8 +36,8 @@ class UserController(rest.RestController):
         team_id = kwargs.get('team_id')
         photo_id = kwargs.get('photo_id')
 
-        user = models.User(name=name, username=username, email=email,
-                           team_id=team_id)
+        user = models.User(
+            name=name, username=username, email=email, team_id=team_id)
         user.hash_password(password)
 
         models.session.add(user)
