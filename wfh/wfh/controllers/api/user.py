@@ -10,7 +10,8 @@ class UserController(rest.RestController):
         return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
     def get_user(self, username):
-        return models.session.query(models.User).filter_by(username=username).first()
+        return models.session.query(models.User).filter_by(
+                username=username).first()
 
     @pecan.expose('json')
     def get_one(self, *args, **kwargs):
