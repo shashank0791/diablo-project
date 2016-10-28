@@ -12,9 +12,15 @@ session = Session()
 
 
 class UserController(rest.RestController):
+    def hash_password(self, password):
+        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+    def get_user(self, username):
+        return session.query(models.User).filter_by(username=username).first()
+
     @pecan.expose('json')
     def get_one(self, *args, **kwargs):
-        user = session.query(models.User).filter_by(username=args[0]).first()
+        user = self.get_user(args[0])
         response.status = 200
         return user.as_dict() if user else abort(404)
 
@@ -36,34 +42,27 @@ class UserController(rest.RestController):
         team = kwargs.get('team')
         photo_id = kwargs.get('photo_id')
 
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'),
-                                        bcrypt.gensalt())
-        user = models.User(name=name, username=username,
-                           password=hashed_password, email=email)
+        user = models.User(name=name, username=username, email=email,
+                           password=self.hash_password(password))
         session.add(user)
+
         try:
             session.commit()
         except exc.IntegrityError:
+            # Duplicated Entry (the same username)
             response.status = 409
         else:
+            # Created new record
             response.status = 201
-        return response
 
-    @pecan.expose()
-    def put(self, *args, **kwargs):
-        # TODO: update existing user
-        # TODO: idempotent PUT (return 200 or 204)
-        if not args:
-            abort(404)
-
-        response.status = 204
         return
 
     @pecan.expose()
-    def delete(self, *args):
-        # TODO: idempotent DELETE
-        if not args:
-            abort(404)
+    def put(self, *args, **kwargs):
+        # NOTE: Currently not supported
+        abort(404)
 
-        response.status = 200
-        return response
+    @pecan.expose()
+    def delete(self, *args):
+        # NOTE: Prohibit from deleting user
+        abort(404)
