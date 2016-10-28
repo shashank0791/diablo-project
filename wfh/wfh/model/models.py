@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import orm
 from sqlalchemy import sql
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey, Date
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Date
 from sqlalchemy_utils import database_exists, create_database
 
 USER = "root"
@@ -80,6 +80,16 @@ class Votes(JsonMixin, Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     explanation_id = Column(Integer, ForeignKey('explanation.id'))
+
+
+class Authentication(JsonMixin, Base):
+    __tablename__ = 'authentication'
+
+    id = Column(Integer, primary_key=True)
+    datetime = Column(DateTime())
+    user_id = Column(Integer, ForeignKey('users.id'))
+    auth_key = Column(String(128), unique=True)
+
 
 Session = orm.sessionmaker(bind=engine)
 session = Session()
